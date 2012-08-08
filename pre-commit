@@ -1,0 +1,47 @@
+#!/bin/bash
+#
+# An example hook script to verify what is about to be committed.
+# Called by git-commit with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+
+if git-rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+allowdebugging=$(git config hooks.allowdebugging)
+INVALID_FILES=""
+
+if [ "$allowdebugging" != "true" ]
+	then
+	for FILE in `git diff --cached --name-only $against --` ; do
+		# Check if the file contains debugging statements
+		if [[ "$FILE" =~ \.js$ ]] && grep -Pq '^\s+console\.(log|trace|count)' $FILE
+			then
+			INVALID_FILES="${INVALID_FILES}\t${FILE}\n"
+			stopme=true
+		fi
+	done
+	if [ "$stopme" ]
+		then
+		echo "Error: The following files contain debugging statements."
+		echo
+		echo -e "$INVALID_FILES"
+		echo "This can cause problems on platforms where"
+		echo "debugging tools are not installed."
+		echo
+		echo "If you know what you are doing you can disable this"
+		echo "check using:"
+		echo
+		echo -e "\tgit config hooks.allowdebugging true"
+		echo
+		echo "Or use --no-verify to bypass pre-commit hook"
+		echo
+		exit 1
+	fi
+fi
