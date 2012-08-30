@@ -20,11 +20,19 @@ INVALID_FILES=""
 if [ "$allowdebugging" != "true" ]
 	then
 	for FILE in `git diff --cached --name-only $against --` ; do
-		# Check if the file contains debugging statements
-		if [[ "$FILE" =~ \.js$ ]] && grep -Pq '^\s+console\.(log|trace|count)' $FILE
-			then
-			INVALID_FILES="${INVALID_FILES}\t${FILE}\n"
-			stopme=true
+
+		# Check if file contains debugging statements
+		if [[ -e "$FILE" ]]; then
+			if [[ "$FILE" =~ \.js$ ]] && grep -Pq '^\s+console\.(log|trace|count)' $FILE
+				then
+				INVALID_FILES="${INVALID_FILES}\t${FILE}\n"
+				stopme=true
+			fi
+			if [[ "$FILE" =~ \.php$ ]] && grep -Pq '^\s+var_dump' $FILE
+				then
+				INVALID_FILES="${INVALID_FILES}\t${FILE}\n"
+				stopme=true
+			fi
 		fi
 	done
 	if [ "$stopme" ]
