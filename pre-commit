@@ -23,12 +23,12 @@ if [ "$allowdebugging" != "true" ]
 
 		# Check if file contains debugging statements
 		if [[ -e "$FILE" ]]; then
-			if [[ "$FILE" =~ \.js$ ]] && grep -Pq '^\s+console\.(log|trace|count)' $FILE
+			if [[ "$FILE" =~ \.js$ ]] && egrep -q '^\s+console\.(log|trace|count)' $FILE
 				then
 				INVALID_FILES="${INVALID_FILES}\t${FILE}\n"
 				stopme=true
 			fi
-			if [[ "$FILE" =~ \.php$ ]] && grep -Pq '^\s+var_dump' $FILE
+			if [[ "$FILE" =~ \.php$ ]] && egrep -q '^\s+var_dump' $FILE
 				then
 				INVALID_FILES="${INVALID_FILES}\t${FILE}\n"
 				stopme=true
@@ -53,3 +53,4 @@ if [ "$allowdebugging" != "true" ]
 		exit 1
 	fi
 fi
+
